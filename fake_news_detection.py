@@ -43,19 +43,16 @@ nltk.download('stopwords')
 
 real_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Authentic-48K.csv',nrows=3000)
 fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-1K.csv')
-#fake_news = pd.read_csv('F:\CSE academic\Fake_news_detection\fake_daa/new_fake_data.csv')
-new_fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/fake_collection.csv')
-new_fake_news2 = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-Data-m.csv')
-#concat two csv files
+new_fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-313.csv')
+new_fake_news2 = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-375.csv')
 
-news_dataset = pd.concat([real_news,fake_news,new_fake_news,new_fake_news2])
+#concat csv files
+
+news_dataset = pd.concat([real_news,fake_news,new_fake_news2,new_fake_news])
 news_dataset = shuffle(news_dataset)
 news_dataset.reset_index(inplace=True, drop=True)
 
 #print(news_dataset.shape)
-
-#print first five rows of the dataframe
-#news_dataset.head()
 
 #counting the number of missing values in the dataset
 news_dataset.isnull().sum()
@@ -64,9 +61,7 @@ news_dataset.isnull().sum()
 news_dataset = news_dataset.fillna('')
 
 #merging the news headline and title
-news_dataset['content_data'] =news_dataset['headline']+' '+ news_dataset['headline']+' '+news_dataset['content']
-
-#print(news_dataset['content_data'])
+news_dataset['content_data'] =news_dataset['headline']+' '+news_dataset['content']
 
 #separating the data and label
 
@@ -90,15 +85,17 @@ Y=news_dataset['label']
 v=Y.value_counts()
 
 print(v)
-#Y.shape
+
 #training and testing data
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.2,random_state=0)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.3,random_state=10)
 
 
 #TfIDF Vectorizer
 vectorizer = TfidfVectorizer()
 XV_train = vectorizer.fit_transform(X_train)
 XV_test = vectorizer.transform(X_test)
+
+from sklearn.model_selection import cross_val_score
 
 #Logistic regression model
 LR_model = LogisticRegression()
@@ -162,6 +159,42 @@ test_data_recall_DT = recall_score(X_test_prediction_DT, Y_test)
 show_result('Decision Tree Classifier', test_data_accuracy_DT,test_data_f1_DT,test_data_precision_DT,test_data_recall_DT, Y_test, X_test_prediction_DT)
 show_plot_confusion_matrix('Decision Tree Classifier',Y_test,X_test_prediction_DT)
 
+
+#Gradient Boosting Algorithm
+from sklearn.ensemble import GradientBoostingClassifier
+GBC = GradientBoostingClassifier(random_state=0)
+GBC.fit(XV_train,Y_train)
+
+GradientBoostingClassifier(random_state=0)
+
+X_test_prediction_GBC = GBC.predict(XV_test)
+
+test_data_accuracy_GBC = accuracy_score(X_test_prediction_GBC, Y_test)
+test_data_f1_GBC = f1_score(X_test_prediction_GBC, Y_test)
+test_data_precision_GBC = precision_score(X_test_prediction_GBC, Y_test)
+test_data_recall_GBC = recall_score(X_test_prediction_GBC, Y_test)
+
+show_result('Gradient Boosting Classifier', test_data_accuracy_GBC,test_data_f1_GBC,test_data_precision_GBC,test_data_recall_GBC, Y_test, X_test_prediction_GBC)
+show_plot_confusion_matrix('Gradient Boosting Classifier',Y_test,X_test_prediction_DT)
+
+#Passive Aggresive Classification
+from sklearn.linear_model import PassiveAggressiveClassifier
+from sklearn.datasets import make_classification
+
+PAC = PassiveAggressiveClassifier(max_iter=1000, random_state=0,tol=1e-3)
+PAC.fit(XV_train, Y_train)
+PassiveAggressiveClassifier(random_state=0)
+
+X_test_prediction_PAC = PAC.predict(XV_test)
+
+test_data_accuracy_PAC = accuracy_score(X_test_prediction_PAC, Y_test)
+test_data_f1_PAC = f1_score(X_test_prediction_PAC, Y_test)
+test_data_precision_PAC= precision_score(X_test_prediction_PAC, Y_test)
+test_data_recall_PAC = recall_score(X_test_prediction_PAC, Y_test)
+
+show_result('Passive Aggressive Classifier', test_data_accuracy_PAC,test_data_f1_PAC,test_data_precision_PAC,test_data_recall_PAC, Y_test, X_test_prediction_PAC)
+show_plot_confusion_matrix('Passive Aggressive Classifier',Y_test,X_test_prediction_PAC)
+
 #predictive system    
     
 print('According to Logistic Regression Model:\n ')
@@ -172,6 +205,9 @@ print('According to Naive Bayes:\n ')
 show_prediction(1, XV_test,NB)
 print('According to Decision Tree Classifier:\n ')
 show_prediction(1, XV_test,DT)
-
+print('According to Gradient Boosting Classifier:\n ')
+show_prediction(1, XV_test,GBC)
+print('According to Passive Aggressive Classifier:\n ')
+show_prediction(1, XV_test,PAC)
 #compare accuracy
-accuracy_compare(test_data_accuracy_LR,test_data_accuracy_RFC,test_data_accuracy_NB,test_data_accuracy_DT)
+accuracy_compare(test_data_accuracy_LR,test_data_accuracy_RFC,test_data_accuracy_NB,test_data_accuracy_DT,test_data_accuracy_GBC,test_data_accuracy_PAC)

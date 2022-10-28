@@ -40,11 +40,11 @@ from prediction import show_prediction
 
 
 #loading the dataset to pandas dataframe
-real_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Authentic-48K.csv',nrows=2000)
+real_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Authentic-48K.csv',nrows=3000)
 fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-1K.csv')
-#fake_news = pd.read_csv('F:\CSE academic\Fake_news_detection\fake_daa/new_fake_data.csv')
-new_fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/fake_collection.csv')
-new_fake_news2 = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-Data-m.csv')
+new_fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-313.csv')
+new_fake_news2 = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-375.csv')
+
 #concat two csv files
 
 news_dataset = pd.concat([real_news,fake_news,new_fake_news,new_fake_news2])
@@ -52,7 +52,7 @@ news_dataset = pd.concat([real_news,fake_news,new_fake_news,new_fake_news2])
 news_dataset = shuffle(news_dataset)
 news_dataset.reset_index(inplace=True, drop=True)
 
-
+'''
 plt.figure(figsize=(10, 5))
 plt.bar('Fake News', len(fake_news), color='orange')
 plt.bar('Real News', len(real_news), color='green')
@@ -69,7 +69,7 @@ plt.title('Distribution of Fake News and Real News', size=15)
 plt.xlabel('News Type', size=15)
 plt.ylabel('Proportion of News Articles', size=15)
 
-
+'''
 #print(news_dataset.shape)
 
 #print first five rows of the dataframe
