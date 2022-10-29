@@ -92,7 +92,7 @@ v=Y.value_counts()
 print(v)
 #Y.shape
 #training and testing data
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.3,random_state=10)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.3,random_state=0)
 
 
 #TfIDF Vectorizer Bi-gram
@@ -199,6 +199,25 @@ test_data_recall_PAC = recall_score(X_test_prediction_PAC, Y_test)
 show_result('Passive Aggressive Classifier', test_data_accuracy_PAC,test_data_f1_PAC,test_data_precision_PAC,test_data_recall_PAC, Y_test, X_test_prediction_PAC)
 show_plot_confusion_matrix('Passive Aggressive Classifier',Y_test,X_test_prediction_PAC)
 
+
+#Linear Support Vector Machine
+
+from sklearn.svm import SVC  
+SVM = SVC(kernel='linear', random_state=0)  
+SVM.fit(XV_train, Y_train)  
+
+X_test_prediction_SVM = SVM.predict(XV_test)
+
+test_data_accuracy_SVM = accuracy_score(X_test_prediction_SVM, Y_test)
+test_data_f1_SVM = f1_score(X_test_prediction_SVM, Y_test)
+test_data_precision_SVM= precision_score(X_test_prediction_SVM, Y_test)
+test_data_recall_SVM = recall_score(X_test_prediction_SVM, Y_test)
+
+show_result('Support Vector Machine', test_data_accuracy_SVM,test_data_f1_SVM,test_data_precision_SVM,test_data_recall_SVM, Y_test, X_test_prediction_SVM)
+show_plot_confusion_matrix('Support Vector Machine',Y_test,X_test_prediction_SVM)
+
+
+
 #predictive system    
     
 print('According to Logistic Regression Model:\n ')
@@ -213,5 +232,7 @@ print('According to Gradient Boosting Classifier:\n ')
 show_prediction(1, XV_test,GBC)
 print('According to Passive Aggressive Classifier:\n ')
 show_prediction(1, XV_test,PAC)
+print('According to Support Vector Machine:\n ')
+show_prediction(1, XV_test,SVM)
 #compare accuracy
-accuracy_compare(test_data_accuracy_LR,test_data_accuracy_RFC,test_data_accuracy_NB,test_data_accuracy_DT,test_data_accuracy_GBC,test_data_accuracy_PAC)
+accuracy_compare(test_data_accuracy_LR,test_data_accuracy_RFC,test_data_accuracy_NB,test_data_accuracy_DT,test_data_accuracy_GBC,test_data_accuracy_PAC,test_data_accuracy_SVM)

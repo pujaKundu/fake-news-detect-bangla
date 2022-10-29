@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Fri Oct 28 21:46:27 2022
+
+@author: USER
+"""
+
+# -*- coding: utf-8 -*-
 
 """Importing dependencies"""
 
@@ -87,13 +94,14 @@ v=Y.value_counts()
 print(v)
 
 #training and testing data
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.3,random_state=0)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.3,random_state=10)
 
+#Hashing Vectorizer
 
-#TfIDF Vectorizer
-vectorizer = TfidfVectorizer()
+from sklearn.feature_extraction.text import HashingVectorizer
+vectorizer = HashingVectorizer(n_features=2**4,ngram_range=(2,2))
 XV_train = vectorizer.fit_transform(X_train)
-XV_test = vectorizer.transform(X_test)
+XV_test = vectorizer.fit_transform(X_test)
 
 from sklearn.model_selection import cross_val_score
 
@@ -128,20 +136,7 @@ test_data_recall_RFC = recall_score(X_test_prediction_RFC, Y_test)
 show_result('Random Forest Classifier', test_data_accuracy_RFC,test_data_f1_RFC, test_data_precision_RFC,test_data_recall_RFC,Y_test, X_test_prediction_RFC)
 show_plot_confusion_matrix('Random Forest Classifier',Y_test,X_test_prediction_RFC)
 
-#Naive Bayes Model
-from sklearn.naive_bayes import MultinomialNB
 
-NB = MultinomialNB()
-NB.fit(XV_train,Y_train)
-X_test_prediction_NB = NB.predict(XV_test)
-
-test_data_accuracy_NB = accuracy_score(X_test_prediction_NB,Y_test)
-test_data_f1_NB = f1_score(X_test_prediction_NB,Y_test)
-test_data_precision_NB = precision_score(X_test_prediction_NB,Y_test)
-test_data_recall_NB = recall_score(X_test_prediction_NB,Y_test)
-
-show_result('Naive Bayes Model', test_data_accuracy_NB,test_data_f1_NB,test_data_precision_NB,test_data_recall_NB, Y_test, X_test_prediction_NB)
-show_plot_confusion_matrix('Naive Bayes Model',Y_test,X_test_prediction_NB)
 
 #decision tree classifier
 from sklearn.tree import DecisionTreeClassifier
@@ -214,12 +209,25 @@ show_plot_confusion_matrix('Support Vector Machine',Y_test,X_test_prediction_SVM
 
 #predictive system    
     
+import matplotlib.pyplot as plt
+def addlabels(x,y):
+    for i in range(len(x)):
+        plt.text(i,y[i],y[i])
+
+def accuracy_compare(acc1,acc2,acc3,acc4,acc5,acc6):
+    fig = plt.figure()
+    ax = fig.add_axes([0,0,1,1])
+    models = ['LR', 'RFC','SVM','DT','GBC','PAC']
+    accuracy = [acc1,acc2,acc3,acc4,acc5,acc6]
+    ax.bar(models,accuracy, color=['blue','green','yellow','pink','orange','cyan'])
+    addlabels(models,accuracy)
+    plt.show()
+
+
 print('According to Logistic Regression Model:\n ')
 show_prediction(1, XV_test,LR_model)
 print('According to Random Forest Classifier:\n ')
 show_prediction(1, XV_test,RFC)
-print('According to Naive Bayes:\n ')
-show_prediction(1, XV_test,NB)
 print('According to Decision Tree Classifier:\n ')
 show_prediction(1, XV_test,DT)
 print('According to Gradient Boosting Classifier:\n ')
@@ -229,4 +237,4 @@ show_prediction(1, XV_test,PAC)
 print('According to Support Vector Machine:\n ')
 show_prediction(1, XV_test,SVM)
 #compare accuracy
-accuracy_compare(test_data_accuracy_LR,test_data_accuracy_RFC,test_data_accuracy_NB,test_data_accuracy_DT,test_data_accuracy_GBC,test_data_accuracy_PAC,test_data_accuracy_SVM)
+accuracy_compare(test_data_accuracy_LR,test_data_accuracy_RFC,test_data_accuracy_DT,test_data_accuracy_GBC,test_data_accuracy_PAC,test_data_accuracy_SVM)
