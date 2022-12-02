@@ -5,6 +5,9 @@ Created on Fri Oct 28 21:46:27 2022
 @author: USER
 """
 
+"""
+Combined dataset
+"""
 # -*- coding: utf-8 -*-
 
 """Importing dependencies"""
@@ -50,8 +53,8 @@ nltk.download('stopwords')
 
 real_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Authentic-48K.csv',nrows=3000)
 fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-1K.csv')
-new_fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-313.csv')
-new_fake_news2 = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-375.csv')
+new_fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-466.csv')
+new_fake_news2 = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-400.csv')
 
 #concat csv files
 
@@ -94,7 +97,7 @@ v=Y.value_counts()
 print(v)
 
 #training and testing data
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.3,random_state=10)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.2,random_state=0)
 
 #Hashing Vectorizer
 

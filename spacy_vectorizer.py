@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
-
 """
-Combined dataset
+Created on Thu Oct 20 15:50:18 2022
 
+@author: USER
 """
+
+# -*- coding: utf-8 -*-
+
 """Importing dependencies"""
 
 import numpy as np
@@ -37,18 +40,16 @@ from counters import punctuation_counter
 sys.path.insert(1, 'F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Preprocessing')
 from stemming import stemming
 
-import nltk
-nltk.download('stopwords')
-
 """Data Preprocessing
 """
 
 #loading the dataset to pandas dataframe
 
-real_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Authentic-48K.csv',nrows=3000)
+real_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Authentic-48K.csv',nrows=2000)
 fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-1K.csv')
-new_fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-466.csv')
-new_fake_news2 = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-400.csv')
+#fake_news = pd.read_csv('F:\CSE academic\Fake_news_detection\fake_daa/new_fake_data.csv')
+new_fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/fake_collection.csv')
+new_fake_news2 = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-Data-m.csv')
 #concat two csv files
 
 news_dataset = pd.concat([real_news,fake_news,new_fake_news,new_fake_news2])
@@ -57,6 +58,9 @@ news_dataset.reset_index(inplace=True, drop=True)
 
 #print(news_dataset.shape)
 
+#print first five rows of the dataframe
+#news_dataset.head()
+
 #counting the number of missing values in the dataset
 news_dataset.isnull().sum()
 
@@ -64,7 +68,7 @@ news_dataset.isnull().sum()
 news_dataset = news_dataset.fillna('')
 
 #merging the news headline and title
-news_dataset['content_data'] = news_dataset['domain']+' '+ news_dataset['headline']+' '+news_dataset['content']
+news_dataset['content_data'] = news_dataset['headline']+' '+news_dataset['content']
 
 #print(news_dataset['content_data'])
 
@@ -77,6 +81,13 @@ Y=news_dataset['label']
 """
 news_dataset['content_data'] = news_dataset['content_data'].apply(stemming)
 
+
+
+#fake_news['headline'] = fake_news['headline'].apply(stemming)
+
+#print('After applying stemming')
+#print(fake_news['headline'])
+
 #Separating data and label
 
 X=news_dataset['content_data']
@@ -84,23 +95,44 @@ Y=news_dataset['label']
 
 v=Y.value_counts()
 
+
+import spacy
+nlp = spacy.load("en_core_web_lg")
+news_dataset['vector'] = news_dataset['content_data'].apply(lambda text: nlp(text).vector)  
+
 print(v)
 #Y.shape
 #training and testing data
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.2,random_state=10)
+X_train, X_test, Y_train, Y_test = train_test_split(news_dataset.vector.values, Y, test_size = 0.2,random_state=2022)
+
+import numpy as np
+# pip install .tar.gz archive from path or URL
 
 
-#TfIDF Vectorizer Bi-gram
-vectorizer = TfidfVectorizer(ngram_range=(2,2))
-XV_train = vectorizer.fit_transform(X_train)
-XV_test = vectorizer.transform(X_test)
+
+X_train_2d = np.stack(X_train)
+X_test_2d = np.stack(X_test)
+
+
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.preprocessing import MinMaxScaler
+
+scaler = MinMaxScaler()
+scaled_train_embed = scaler.fit_transform(X_train_2d)
+scaled_test_embed = scaler.transform(X_test_2d)
+
+'''
+clf = MultinomialNB()
+clf.fit(scaled_train_embed, y_train)
+y_pred = clf.predict(scaled_test_embed)
+'''
 
 #Logistic regression model
 LR_model = LogisticRegression()
-LR_model.fit(XV_train,Y_train)
+LR_model.fit(scaled_train_embed,Y_train)
 
 #accuracy score of test data
-X_test_prediction_LR = LR_model.predict(XV_test)
+X_test_prediction_LR = LR_model.predict(scaled_test_embed)
 
 test_data_accuracy_LR = accuracy_score(X_test_prediction_LR,Y_test)
 test_data_f1_LR = f1_score(X_test_prediction_LR,Y_test)
@@ -113,10 +145,10 @@ show_plot_confusion_matrix('Logistic Regression Model',Y_test,X_test_prediction_
 #Random Forest Classifier
 
 RFC = RandomForestClassifier(random_state=0)
-RFC.fit(XV_train,Y_train)
+RFC.fit(scaled_train_embed,Y_train)
 RandomForestClassifier(random_state=0)
 
-X_test_prediction_RFC = RFC.predict(XV_test)
+X_test_prediction_RFC = RFC.predict(scaled_test_embed)
 
 test_data_accuracy_RFC = accuracy_score(X_test_prediction_RFC, Y_test)
 test_data_f1_RFC = f1_score(X_test_prediction_RFC, Y_test)
@@ -126,12 +158,13 @@ test_data_recall_RFC = recall_score(X_test_prediction_RFC, Y_test)
 show_result('Random Forest Classifier', test_data_accuracy_RFC,test_data_f1_RFC, test_data_precision_RFC,test_data_recall_RFC,Y_test, X_test_prediction_RFC)
 show_plot_confusion_matrix('Random Forest Classifier',Y_test,X_test_prediction_RFC)
 
+
 #Naive Bayes Model
 from sklearn.naive_bayes import MultinomialNB
 
 NB = MultinomialNB()
-NB.fit(XV_train,Y_train)
-X_test_prediction_NB = NB.predict(XV_test)
+NB.fit(scaled_train_embed,Y_train)
+X_test_prediction_NB = NB.predict(scaled_test_embed)
 
 test_data_accuracy_NB = accuracy_score(X_test_prediction_NB,Y_test)
 test_data_f1_NB = f1_score(X_test_prediction_NB,Y_test)
@@ -145,9 +178,9 @@ show_plot_confusion_matrix('Naive Bayes Model',Y_test,X_test_prediction_NB)
 from sklearn.tree import DecisionTreeClassifier
 
 DT = DecisionTreeClassifier()
-DT.fit(XV_train,Y_train)
+DT.fit(scaled_train_embed,Y_train)
 
-X_test_prediction_DT = DT.predict(XV_test)
+X_test_prediction_DT = DT.predict(scaled_test_embed)
 
 test_data_accuracy_DT = accuracy_score(X_test_prediction_DT, Y_test)
 test_data_f1_DT = f1_score(X_test_prediction_DT, Y_test)
@@ -157,77 +190,16 @@ test_data_recall_DT = recall_score(X_test_prediction_DT, Y_test)
 show_result('Decision Tree Classifier', test_data_accuracy_DT,test_data_f1_DT,test_data_precision_DT,test_data_recall_DT, Y_test, X_test_prediction_DT)
 show_plot_confusion_matrix('Decision Tree Classifier',Y_test,X_test_prediction_DT)
 
-
-#Gradient Boosting Algorithm
-from sklearn.ensemble import GradientBoostingClassifier
-GBC = GradientBoostingClassifier(random_state=0)
-GBC.fit(XV_train,Y_train)
-
-GradientBoostingClassifier(random_state=0)
-
-X_test_prediction_GBC = GBC.predict(XV_test)
-
-test_data_accuracy_GBC = accuracy_score(X_test_prediction_GBC, Y_test)
-test_data_f1_GBC = f1_score(X_test_prediction_GBC, Y_test)
-test_data_precision_GBC = precision_score(X_test_prediction_GBC, Y_test)
-test_data_recall_GBC = recall_score(X_test_prediction_GBC, Y_test)
-
-show_result('Gradient Boosting Classifier', test_data_accuracy_GBC,test_data_f1_GBC,test_data_precision_GBC,test_data_recall_GBC, Y_test, X_test_prediction_GBC)
-show_plot_confusion_matrix('Gradient Boosting Classifier',Y_test,X_test_prediction_DT)
-
-#Passive Aggresive Classification
-from sklearn.linear_model import PassiveAggressiveClassifier
-from sklearn.datasets import make_classification
-
-
-PAC = PassiveAggressiveClassifier(max_iter=1000, random_state=0,tol=1e-3)
-PAC.fit(XV_train, Y_train)
-PassiveAggressiveClassifier(random_state=0)
-
-X_test_prediction_PAC = PAC.predict(XV_test)
-
-test_data_accuracy_PAC = accuracy_score(X_test_prediction_PAC, Y_test)
-test_data_f1_PAC = f1_score(X_test_prediction_PAC, Y_test)
-test_data_precision_PAC= precision_score(X_test_prediction_PAC, Y_test)
-test_data_recall_PAC = recall_score(X_test_prediction_PAC, Y_test)
-
-show_result('Passive Aggressive Classifier', test_data_accuracy_PAC,test_data_f1_PAC,test_data_precision_PAC,test_data_recall_PAC, Y_test, X_test_prediction_PAC)
-show_plot_confusion_matrix('Passive Aggressive Classifier',Y_test,X_test_prediction_PAC)
-
-
-#Linear Support Vector Machine
-
-from sklearn.svm import SVC  
-SVM = SVC(kernel='linear', random_state=0)  
-SVM.fit(XV_train, Y_train)  
-
-X_test_prediction_SVM = SVM.predict(XV_test)
-
-test_data_accuracy_SVM = accuracy_score(X_test_prediction_SVM, Y_test)
-test_data_f1_SVM = f1_score(X_test_prediction_SVM, Y_test)
-test_data_precision_SVM= precision_score(X_test_prediction_SVM, Y_test)
-test_data_recall_SVM = recall_score(X_test_prediction_SVM, Y_test)
-
-show_result('Support Vector Machine', test_data_accuracy_SVM,test_data_f1_SVM,test_data_precision_SVM,test_data_recall_SVM, Y_test, X_test_prediction_SVM)
-show_plot_confusion_matrix('Support Vector Machine',Y_test,X_test_prediction_SVM)
-
-
-
 #predictive system    
     
 print('According to Logistic Regression Model:\n ')
-show_prediction(1, XV_test,LR_model)
+show_prediction(1, scaled_test_embed,LR_model)
 print('According to Random Forest Classifier:\n ')
-show_prediction(1, XV_test,RFC)
+show_prediction(1, scaled_test_embed,RFC)
 print('According to Naive Bayes:\n ')
-show_prediction(1, XV_test,NB)
+show_prediction(1, scaled_test_embed,NB)
 print('According to Decision Tree Classifier:\n ')
-show_prediction(1, XV_test,DT)
-print('According to Gradient Boosting Classifier:\n ')
-show_prediction(1, XV_test,GBC)
-print('According to Passive Aggressive Classifier:\n ')
-show_prediction(1, XV_test,PAC)
-print('According to Support Vector Machine:\n ')
-show_prediction(1, XV_test,SVM)
+show_prediction(1, scaled_test_embed,DT)
+
 #compare accuracy
-accuracy_compare(test_data_accuracy_LR,test_data_accuracy_RFC,test_data_accuracy_NB,test_data_accuracy_DT,test_data_accuracy_GBC,test_data_accuracy_PAC,test_data_accuracy_SVM)
+accuracy_compare(test_data_accuracy_LR,test_data_accuracy_RFC,test_data_accuracy_NB,test_data_accuracy_DT)

@@ -43,12 +43,12 @@ nltk.download('stopwords')
 
 real_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Authentic-48K.csv',nrows=3000)
 fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-1K.csv')
-new_fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-313.csv')
-new_fake_news2 = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-375.csv')
+new_fake_news = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-466.csv')
+new_fake_news2 = pd.read_csv('F:\CSE academic\CSE 4-2\project\Bangla_fake_news_detection\Dataset/Fake-data-400.csv')
 
 #concat csv files
 
-news_dataset = pd.concat([real_news,fake_news,new_fake_news2,new_fake_news])
+news_dataset = pd.concat([real_news,fake_news,new_fake_news,new_fake_news2])
 news_dataset = shuffle(news_dataset)
 news_dataset.reset_index(inplace=True, drop=True)
 
@@ -61,7 +61,7 @@ news_dataset.isnull().sum()
 news_dataset = news_dataset.fillna('')
 
 #merging the news headline and title
-news_dataset['content_data'] =news_dataset['headline']+' '+news_dataset['content']
+news_dataset['content_data'] = news_dataset['headline']+' '+news_dataset['content']
 
 #separating the data and label
 
@@ -87,7 +87,7 @@ v=Y.value_counts()
 print(v)
 
 #training and testing data
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.3,random_state=0)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.2,random_state=0)
 
 
 #TfIDF Vectorizer
